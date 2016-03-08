@@ -59,6 +59,27 @@ module ActiveRecord
       assert_equal "Relation passed to #or must be structurally compatible. Incompatible values: [:order]", error.message
     end
 
+    def test_or_with_relation_having_limit
+      error = assert_raises ArgumentError do
+        Post.where('id = 1').limit(1).or(Post.where(:id => [2, 3]).limit(1)).to_a
+      end
+      assert_equal "Relation passed to #or must be structurally compatible. Incompatible values: [:limit]", error.message
+    end
+
+    def test_or_with_relation_having_distinct
+      error = assert_raises ArgumentError do
+        Post.where('id = 1').distinct.or(Post.where(:id => [2, 3]).distinct).to_a
+      end
+      assert_equal "Relation passed to #or must be structurally compatible. Incompatible values: [:distinct]", error.message
+    end
+
+    def test_or_with_relation_having_offset
+      error = assert_raises ArgumentError do
+        Post.where('id = 1').offset(1).or(Post.where(:id => [2, 3]).offset(1)).to_a
+      end
+      assert_equal "Relation passed to #or must be structurally compatible. Incompatible values: [:offset]", error.message
+    end
+
     def test_or_when_grouping
       groups = Post.where('id < 10').group('body').select('body, COUNT(*) AS c')
       expected = groups.having("COUNT(*) > 1 OR body like 'Such%'").to_a.map {|o| [o.body, o.c] }

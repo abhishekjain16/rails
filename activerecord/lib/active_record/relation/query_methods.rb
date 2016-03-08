@@ -1210,9 +1210,10 @@ module ActiveRecord
     end
 
     def structurally_incompatible_values_for_or(other)
-      Relation::SINGLE_VALUE_METHODS.reject { |m| send("#{m}_value") == other.send("#{m}_value") } +
+      (Relation::SINGLE_VALUE_METHODS - [:limit, :distinct, :offset]).reject { |m| send("#{m}_value") == other.send("#{m}_value") } +
         (Relation::MULTI_VALUE_METHODS - [:extending]).reject { |m| send("#{m}_values") == other.send("#{m}_values") } +
-        (Relation::CLAUSE_METHODS - [:having, :where]).reject { |m| send("#{m}_clause") == other.send("#{m}_clause") }
+        (Relation::CLAUSE_METHODS - [:having, :where]).reject { |m| send("#{m}_clause") == other.send("#{m}_clause") } +
+        [:limit, :distinct, :offset].select {|m| send("#{m}_value").present? || other.send("#{m}_value").present? }
     end
 
     def new_where_clause
